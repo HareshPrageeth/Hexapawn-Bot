@@ -145,12 +145,15 @@ def userInput():
                     invalid_inp = False
                 else:
                     print("Invalid input.\n")
+                    invalid_inp = True
                     continue
             else:
-                print("Invalid input\n")
+                print("Invalid input.\n")
+                invalid_inp = True
                 continue
         else:
             print("Invalid input.\n")
+            invalid_inp = True
             continue
 
     invalid_inp = True
@@ -167,13 +170,17 @@ def userInput():
                     invalid_inp = False
                 else:
                     print("Invalid input.\n")
+                    invalid_inp = True
                     continue
             else:
                 print("Invalid input.\n")
+                invalid_inp = True
                 continue
         else:
             print("Invalid input.\n")
+            invalid_inp = True
             continue
+    
     return [pawn_x,pawn_y,place_x,place_y]
 
 #############################################################################
@@ -211,6 +218,4 @@ if __name__ == '__main__':
 
         else:
             print("Invalid Input\n")
-
-
 
