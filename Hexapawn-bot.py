@@ -218,9 +218,3 @@ if __name__ == '__main__':
 
         else:
             print("Invalid Input\n")
-
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 6965fd0d14b3f2917e5e1394aee6e1f3255aed4a
