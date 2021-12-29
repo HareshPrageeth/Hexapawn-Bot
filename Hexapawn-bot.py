@@ -25,6 +25,7 @@ finaldict={returnnestedtuple(board):{}}
 #Removes the moves which led to the loss
 #It removes all the moves up to the point in the game where there was a choice
 def removebadmove(thisgame2):
+    print(thisgame2)
     global board,branch,finaldict
     for end_ind in range(len(thisgame2)):
         end_ind=end_ind*-1
@@ -225,6 +226,55 @@ def userInput():
             continue
     
     return [pawn_x,pawn_y,place_x,place_y]
+    
+#############################################################################
+
+#Mirrors the board, doesn't change the existing board 
+def mirror(board): 
+    tboard = list(board)
+    for col in range(3): 
+        tboard[col]=list(tboard[col])
+        for row in range(3): 
+            tboard[col][row] = board[col][abs(row - 2)]
+    return returnnestedtuple(tboard)
+
+#############################################################################
+
+#Mirrors the game and simulates it
+def mirrorsimulation(game):
+    global board,branch,finaldict,thisgame
+    for i in range(len(game)):
+        game[i]=mirror(game[i])
+    branch=finaldict[game[0]]
+    thisgame=[game[0]]
+    for i in range(1,len(game),2):
+        mirroredboard=game[i]
+        if mirroredboard in branch:
+            branch=branch[mirroredboard]
+        else:
+            branch.update({mirroredboard:{}.copy()})
+            branch=branch[mirroredboard]
+        thisgame.append(mirroredboard)
+
+        if i==len(game)-1:
+            break
+        if len(branch)==0:
+            board=list(mirroredboard)
+            for ind in range(3):
+                board[ind]=list(board[ind])
+            genmoves()
+            
+        i=i+1
+        mirroredboard=game[i]
+        branch=branch[mirroredboard]
+        thisgame.append(mirroredboard)
+    if len(thisgame)%1==0:
+        board=list(mirroredboard)
+        for ind in range(3):
+            board[ind]=list(board[ind])
+        winner=gameover(-1)
+        if winner == -1 :
+            removebadmove(thisgame)
 
 #############################################################################
 #                          Main method
@@ -256,15 +306,17 @@ if __name__ == '__main__':
                     if winner == -1 :
                         print("Human wins")
                         removebadmove(thisgame)
+                        mirrorsimulation(thisgame)
                         break
-
+                    
                     compmove()
                     print("\nComputer Move:")
                     displayboard()
                     thisgame.append(returnnestedtuple(board))
                     winner=gameover(-1)
-                    if winner == 1 :
+                    if winner == 1:
                         print("Computer wins")
+                        mirrorsimulation(thisgame)
                         break
 
                 else:
@@ -273,6 +325,7 @@ if __name__ == '__main__':
         else:
             print("Invalid choice.\n")
         print("Do you want to run the program agian?[Yes(Y/y) or No(N/n)]")
+        print(finaldict)
         ch=input("Enter choice:") 
 
 ###############################################################################
