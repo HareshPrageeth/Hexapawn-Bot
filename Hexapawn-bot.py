@@ -1,10 +1,47 @@
-
 import random
+###############################################################################
 
-#Global variables
+def returnnestedtuple(board1):
+    board1=board1.copy()
+    for x in range(3):
+        board1[x]=tuple(board1[x])
+    board1=tuple(board1)
+    return board1
+
+###############################################################################
+
+
+#Global variables for each game
+
 board = [[1, 1, 1], [0, 0, 0], [-1, -1, -1]]
+branch={}
 
-###############################################
+#Global variable for the enitre program
+finaldict={returnnestedtuple(board):{}}
+
+
+###############################################################################
+
+#Removes the moves which led to the loss
+#It removes all the moves up to the point in the game where there was a choice
+def removebadmove(thisgame2):
+    global board,branch,finaldict
+    for end_ind in range(len(thisgame2)):
+        end_ind=end_ind*-1
+        innerdict=finaldict
+        for i in thisgame2[:end_ind]:
+            innerdict=innerdict[i]
+        if len(innerdict)>1:
+            innerdict2=finaldict
+            end_ind=end_ind-1
+            for i in thisgame2[:end_ind]:
+                innerdict2=innerdict2[i]
+            bad=innerdict2[thisgame2[end_ind]].pop(thisgame2[end_ind+1])
+            break
+        elif len(innerdict[thisgame2[end_ind]])==0:
+            innerdict.clear()
+
+###############################################################################
 
 #Returns True if there is a move, player = -1 for user and +1 for computer
 def anymove(player):
@@ -16,15 +53,16 @@ def anymove(player):
                 if valid(row, column)!= []:
                     moves.append(valid(row, column))
     if moves == []:
-        return (False)
+        return False
     else:
-        return (True)
+        return True
 
-##############################################################################
+###############################################################################
 
-#computer's move, makes a random move from all of the computer's possible moves
-#call function when it's computer's turn
-def compmove():
+#Method to generate all possible moves and update it in the tree
+#this is function is called only if the moves are not already there
+def genmoves():
+    global branch,finaldict
     li = []
     allmoves = []
     for row in range(3):
@@ -34,20 +72,35 @@ def compmove():
     for pawn in li:
         for place in valid(pawn[0],pawn[1]):
             allmoves.append([pawn, place])
-    if len(allmoves) != 0:
-        #move = allmoves[random.randint(0,len(allmoves))]
-        ##haresh
-        move = allmoves[random.randint(0,len(allmoves)-1)]
-        #updateboard(board, move[0][0], move[0][1], move[1][0], move[1][1])
-        #return (board)
-        updateboard( move[0][0], move[0][1], move[1][0], move[1][1])
-    else:
-        print("No moves possible.")
-        #return(board)
+    
+    newboards=[]
+    for el in allmoves:
+        pawn_x=el[0][0]
+        pawn_y=el[0][1]
+        place_x=el[1][0]
+        place_y=el[1][1]
+        newboards.append(returnnestedtuple(returnupdatedboard(board,pawn_x,pawn_y,place_x,place_y)))
+    branch.update(dict.fromkeys(newboards))
+    for key in branch:
+      branch[key]={}.copy()
 
 ###############################################################################
 
-#input coordinate of pawn and obtain possible places to move to
+#Computer's move, makes a random move from all of the computer's possible moves
+#Call function when it's computer's turn
+def compmove():
+    global board,branch,finaldict
+    if len(branch)==0:
+        genmoves()
+    move = list(random.choice(list(branch.keys())))
+    branch=branch[returnnestedtuple(move)]
+    for x in range(3):
+        move[x]=list(move[x])
+    board=list(move)
+
+###############################################################################
+
+#Input coordinate of pawn and obtain possible places to move to
 #if [place_x, place_y] in valid(pawn_x, pawn_y), the move is valid
 def valid(pawn_x, pawn_y):
     direc = board[pawn_y][pawn_x]
@@ -60,81 +113,71 @@ def valid(pawn_x, pawn_y):
             possible_moves.append([pawn_x, pawn_y + direc])
     return(possible_moves)
 
-#####################################################
+###############################################################################
 
-#general board updation
-def updateboard(pawn_x, pawn_y, place_x, place_y):
-    board[place_y][place_x] = board[pawn_y][pawn_x]
-    board[pawn_y][pawn_x]=0
-    return board
+#Returns updated the board taking original board and coordinates as arguments
+def returnupdatedboard(board2,pawn_x, pawn_y, place_x, place_y):
+    board2=board2.copy()
+    for x in range(3):
+        board2[x]=board2[x].copy()
+    board2[place_y][place_x] = board2[pawn_y][pawn_x]
+    board2[pawn_y][pawn_x]=0
+    return board2
 
-################################################################################
+###############################################################################
+
 #Returns 1 if the human won, -1 if the computer won and 0 if the game is still running
-def gameover(board,turn):
-    # checking if the human pawns are not there
+def gameover(turn):
+    
+    #Checking if the human pawns are not there
     if -1 not in board[0] and -1 not in board[1] and -1 not in board[2]:
         return 1
 
-    # checking if the comp pawns are not there
+    #Checking if the comp pawns are not there
     elif 1 not in board[0] and 1 not in board[1] and 1 not in board[2]:
         return -1
 
-    # checking if the human pawn reached the end
+    #Checking if a human pawn reached the end
     elif -1 in board[0]:
         return -1
 
-    # checking if the comp pawn reached the end
+    #Checking if a computer pawn reached the end
     elif 1 in board[2]:
         return 1
 
-    # checking if the comp has no valid move to play
+    #Checking if the computer has no valid move to play
     elif not anymove(1) and turn == 1:
         return -1
 
-    # checking if the human has no valid move to play
+    #Checking if the human has no valid move to play
     elif not anymove(-1) and turn == -1:
         return 1
 
     else:
         return 0
 
-####################################################################################
+###############################################################################
 
+def displayboard():
+    print(" {:^3} {:^3} {:^3}".format("0","1","2"))
+    for row in range(3):
+        for col in range(3):
+            if board[row][col]==1:
+                print("| x ",end='')
+            elif board[row][col]==0:
+                print("|   ",end='')
+            elif board[row][col]==-1:
+                print("| o ",end='')
+        print("|{:^3}".format(str(row)))
 
-def displayboard(board):
-  print(" {:^3} {:^3} {:^3}".format("0","1","2"))
-  for row in range(3):
-      for col in range(3):
-          if board[row][col]==1:
-              print("| x ",end='')
-          elif board[row][col]==0:
-              print("|   ",end='')
-          elif board[row][col]==-1:
-              print("| o ",end='')
-      print("|{:^3}".format(str(row)))
-
-#########################################################################################
-
-def displayboard(board):
-  print(" {:^3} {:^3} {:^3}".format("0","1","2"))
-  for row in range(3):
-      for col in range(3):
-          if board[row][col]==1:
-              print("| x ",end='')
-          elif board[row][col]==0:
-              print("|   ",end='')
-          elif board[row][col]==-1:
-              print("| o ",end='')
-      print("|{:^3}".format(str(row)))
-
-#########################################################################################
+###############################################################################
 
 def userInput():
     valid_co = [0,1,2]
     invalid_inp = True
     while (invalid_inp):
         inp = input("Enter coordinates of pawn to move in the format (x,y):")
-        invalid_inp = ("," not in inp) and inp.endswith(")") and inp.startswith("(")
+        invalid_inp = not(("," in inp) and inp.endswith(")") and inp.startswith("("))
         if not invalid_inp:
             pawn_x, pawn_y = inp[1:-1].split(",")
             pawn_x, pawn_y = pawn_x.strip(), pawn_y.strip()
@@ -159,7 +202,7 @@ def userInput():
     invalid_inp = True
     while (invalid_inp):
         inp = input("Enter coordinates of the postion to which you wish to move the pawn in the format (x,y):")
-        invalid_inp = ("," not in inp) and inp.endswith(")") and inp.startswith("(")
+        invalid_inp = not(("," in inp) and inp.endswith(")") and inp.startswith("("))
         if not invalid_inp:
             place_x, place_y = inp[1:-1].split(",")
             place_x, place_y = place_x.strip(), place_y.strip()
@@ -185,36 +228,51 @@ def userInput():
 
 #############################################################################
 #                          Main method
-############################################################################
+#############################################################################
 
 if __name__ == '__main__':
-    displayboard(board)
-    while True:
-        print("Your move:")
-        pawn_x, pawn_y, place_x, place_y = userInput()
-        if [place_x, place_y] in valid(pawn_x, pawn_y):
-            updateboard(pawn_x, pawn_y, place_x, place_y)
-            displayboard(board)
-            winner=gameover(board,1)
-            if winner == -1 :
-                print("Human wins")
-                break
-            elif winner == 1:
-                print("Computer wins")
-                break
+    global board,branch,finaldict
+    ch='y'
+    while ch not in "Nn": 
+        if ch in "Yy":
+            board = [[1, 1, 1], [0, 0, 0], [-1, -1, -1]]
+            branch=finaldict[returnnestedtuple(board)]
+            thisgame=[returnnestedtuple(board)]
+            displayboard()
 
+            while True:
+                print("Your move:")
+                pawn_x, pawn_y, place_x, place_y = userInput()
+                if [place_x, place_y] in valid(pawn_x, pawn_y):
+                    board=returnupdatedboard(board,pawn_x, pawn_y, place_x, place_y)
+                    displayboard()
+                    if returnnestedtuple(board) in branch:
+                        branch=branch[returnnestedtuple(board)]
+                    else:
+                        branch.update({returnnestedtuple(board):{}.copy()})
+                        branch=branch[returnnestedtuple(board)]
+                    thisgame.append(returnnestedtuple(board))
+                    winner=gameover(1)
+                    if winner == -1 :
+                        print("Human wins")
+                        removebadmove(thisgame)
+                        break
 
-            compmove()
-            print("\nComputer Move:")
-            displayboard(board)
-            winner=gameover(board,-1)
-            if winner == -1 :
-                print("Human wins")
-                break
-            elif winner == 1:
-                print("Computer wins")
-                break
+                    compmove()
+                    print("\nComputer Move:")
+                    displayboard()
+                    thisgame.append(returnnestedtuple(board))
+                    winner=gameover(-1)
+                    if winner == 1 :
+                        print("Computer wins")
+                        break
 
+                else:
+                    print("Invalid Input\n")
 
         else:
-            print("Invalid Input\n")
+            print("Invalid choice.\n")
+        print("Do you want to run the program agian?[Yes(Y/y) or No(N/n)]")
+        ch=input("Enter choice:") 
+
+###############################################################################
