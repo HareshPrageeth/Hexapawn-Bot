@@ -25,7 +25,6 @@ finaldict={returnnestedtuple(board):{}}
 #Removes the moves which led to the loss
 #It removes all the moves up to the point in the game where there was a choice
 def removebadmove(thisgame2):
-    print(thisgame2)
     global board,branch,finaldict
     for end_ind in range(len(thisgame2)):
         end_ind=end_ind*-1
@@ -325,7 +324,6 @@ if __name__ == '__main__':
         else:
             print("Invalid choice.\n")
         print("Do you want to run the program agian?[Yes(Y/y) or No(N/n)]")
-        print(finaldict)
         ch=input("Enter choice:") 
 
 ###############################################################################
