@@ -159,17 +159,36 @@ def gameover(turn):
 ###############################################################################
 
 def displayboard():
-    print(" {:^3} {:^3} {:^3}".format("0","1","2"))
-    for row in range(3):
-        for col in range(3):
-            if board[row][col]==1:
-                print("| x ",end='')
-            elif board[row][col]==0:
-                print("|   ",end='')
-            elif board[row][col]==-1:
-                print("| o ",end='')
-        print("|{:^3}".format(str(row)))
-
+    print(" {:^9} {:^9} {:^9} ".format("0","1","2"))
+    print(" _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ")
+    for i in range(3):
+        print("|         |         |         |")
+        for j in range(3):
+          if board[i][j]==-1:
+            print("|   (*)   ",end='')
+          elif board[i][j]==1:
+            print("|   <\">   ",end='')
+          else:
+            print("|         ",end='')
+        print("|")
+        for j in range(3):
+          if board[i][j]==-1:
+            print("|   |:|   ",end='')
+          elif board[i][j]==1:
+            print("|   /V\\   ",end='')
+          else:
+            print("|         ",end='')
+        print("| ",i)
+        for j in range(3):
+          if board[i][j]==-1:
+            print("|   ===   ",end='')
+          elif board[i][j]==1:
+            print("|   ---   ",end='')
+          else:
+            print("|         ",end='')
+        print("|")
+        print("|_ _ _ _ _|_ _ _ _ _|_ _ _ _ _|")
+    print()
 ###############################################################################
 
 def userInput():
