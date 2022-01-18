@@ -299,7 +299,6 @@ def mirrorsimulation(game):
 #############################################################################
 
 if __name__ == '__main__':
-    global board,branch,finaldict
     ch='y'
     while ch not in "Nn": 
         if ch in "Yy":
